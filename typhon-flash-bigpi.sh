@@ -14,8 +14,8 @@ IMAGE_PATH="$IMAGE_BASE/$IMAGE_NAME"
 echo "Resolved image: $IMAGE_NAME"
 
 echo --- sanity check $DEVICE ---
-ACTUAL_SIZE=$(cat /sys/block/$(basename $DEVICE)/size 2>/dev/null | awk '{print $1*512}')
-REMOVABLE=$(cat /sys/block/$(basename $DEVICE)/removable 2>/dev/null)
+ACTUAL_SIZE=$(cat /sys/block/"$(basename "$DEVICE")"/size 2>/dev/null | awk '{print $1*512}')
+REMOVABLE=$(cat /sys/block/"$(basename "$DEVICE")"/removable 2>/dev/null)
 echo "  size: $ACTUAL_SIZE bytes (expected: $EXPECTED_SIZE_BYTES)"
 echo "  removable: $REMOVABLE"
 if [ "$ACTUAL_SIZE" != "$EXPECTED_SIZE_BYTES" ] || [ "$REMOVABLE" != "1" ]; then
