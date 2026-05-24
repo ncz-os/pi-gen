@@ -13,7 +13,7 @@ if [ -z "$IMAGE_NAME" ]; then echo "ABORT: no bigpi image on ARGONAS"; exit 1; f
 IMAGE_PATH="$IMAGE_BASE/$IMAGE_NAME"
 echo "Resolved image: $IMAGE_NAME"
 
-echo === sanity check $DEVICE ===
+echo --- sanity check $DEVICE ---
 ACTUAL_SIZE=$(cat /sys/block/$(basename $DEVICE)/size 2>/dev/null | awk '{print $1*512}')
 REMOVABLE=$(cat /sys/block/$(basename $DEVICE)/removable 2>/dev/null)
 echo "  size: $ACTUAL_SIZE bytes (expected: $EXPECTED_SIZE_BYTES)"
@@ -25,17 +25,17 @@ fi
 echo "  OK"
 
 echo
-echo === umount any auto-mounted partitions ===
+echo --- umount any auto-mounted partitions ---
 umount /dev/sda1 /dev/sda2 2>/dev/null || true
 
 echo
-echo === verify image present + xz integrity on ARGONAS ===
+echo --- verify image present + xz integrity on ARGONAS ---
 sshpass -p "$ARGONAS_PASS" ssh -o PubkeyAuthentication=no -o StrictHostKeyChecking=no \
     root@192.168.207.101 \
     "ls -la $IMAGE_PATH && xz -t $IMAGE_PATH && echo OK"
 
 echo
-echo === STREAM FLASH from ARGONAS direct to $DEVICE ===
+echo --- STREAM FLASH from ARGONAS direct to $DEVICE ---
 echo "  source: argonas:$IMAGE_PATH"
 echo "  target: $DEVICE"
 echo "  started: $(date -u)"
@@ -47,7 +47,7 @@ sshpass -p "$ARGONAS_PASS" ssh -o PubkeyAuthentication=no -o StrictHostKeyChecki
   | dd of="$DEVICE" bs=4M conv=fsync status=progress
 
 echo
-echo === sync + settle ===
+echo --- sync + settle ---
 sync
 sleep 3
 partprobe $DEVICE 2>/dev/null || true
@@ -55,7 +55,7 @@ sleep 1
 echo "  finished: $(date -u)"
 
 echo
-echo === BYTE-VERIFY: sample regions vs source ===
+echo --- BYTE-VERIFY: sample regions vs source ---
 SAMPLE_OFFSETS=(0 2048 16384 1064960 5000000 8000000)
 FAIL=0
 for off in "${SAMPLE_OFFSETS[@]}"; do
@@ -79,7 +79,7 @@ if [ "$FAIL" = "1" ]; then
 fi
 echo "Verify passed: all sampled regions match source. SD is bootable."
 echo
-echo === final partition state ===
+echo --- final partition state ---
 lsblk -f $DEVICE 2>&1 | head -10
 fdisk -l $DEVICE 2>&1 | tail -8
 echo
